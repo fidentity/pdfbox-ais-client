@@ -22,7 +22,6 @@ import com.swisscom.ais.client.model.PdfHandle;
 import com.swisscom.ais.client.model.SignatureMode;
 import com.swisscom.ais.client.model.SignatureResult;
 import com.swisscom.ais.client.model.UserData;
-import com.swisscom.ais.client.model.VisibleSignatureDefinition;
 import com.swisscom.ais.client.rest.RestClient;
 import com.swisscom.ais.client.rest.model.*;
 import com.swisscom.ais.client.rest.model.pendingreq.AISPendingRequest;
@@ -30,15 +29,12 @@ import com.swisscom.ais.client.rest.model.signreq.AISSignRequest;
 import com.swisscom.ais.client.rest.model.signresp.AISSignResponse;
 import com.swisscom.ais.client.rest.model.signresp.ResultMessage;
 import com.swisscom.ais.client.rest.model.signresp.ScExtendedSignatureObject;
+import com.swisscom.ais.client.utils.DocumentUtils;
 import com.swisscom.ais.client.utils.Loggers;
 import com.swisscom.ais.client.utils.Trace;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -199,33 +195,15 @@ public class AisClientImpl implements AisClient {
                                                                  UserData userData,
                                                                  Trace trace) {
         return documentHandles
-            .stream()
-            .map(handle -> prepareOneDocumentForSigning(handle, signatureMode, signatureType, userData, trace))
-            .collect(Collectors.toList());
-    }
-
-    private PdfDocument prepareOneDocumentForSigning(PdfHandle documentHandle,
-                                                     SignatureMode signatureMode,
-                                                     SignatureType signatureType,
-                                                     UserData userData,
-                                                     Trace trace) {
-        try {
-            logClient.info("Preparing {} signing for document: {} - {}",
-                           signatureMode.getFriendlyName(),
-                           documentHandle.getInputFromFile(),
-                           trace.getId());
-            FileInputStream fileIn = new FileInputStream(documentHandle.getInputFromFile());
-            FileOutputStream fileOut = new FileOutputStream(documentHandle.getOutputToFile());
-            VisibleSignatureDefinition signatureDefinition = documentHandle.getVisibleSignatureDefinition();
-           
-            PdfDocument newDocument = new PdfDocument(documentHandle.getOutputToFile(), fileIn, fileOut, signatureDefinition, trace);
-            newDocument.prepareForSigning(documentHandle.getDigestAlgorithm(), signatureType, userData);
-            return newDocument;
-        } catch (Exception e) {
-            throw new AisClientException("Failed to prepare the document [" +
-                                         documentHandle.getInputFromFile() + "] for " +
-                                         signatureMode.getFriendlyName() + " signing", e);
-        }
+                .stream()
+                .map(handle -> {
+                    logClient.info("Preparing {} signing for document: {} - {}",
+                            signatureMode.getFriendlyName(),
+                            handle.getInputFromFile(),
+                            trace.getId());
+                    return DocumentUtils.prepareOneDocumentForSigning(handle, signatureMode, signatureType, userData, trace);
+                })
+                .collect(Collectors.toList());
     }
 
     private List<AdditionalProfile> prepareAdditionalProfiles(List<PdfDocument> documentsToSign, AdditionalProfile... extraProfiles) {

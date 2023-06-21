@@ -30,9 +30,8 @@ import static com.swisscom.ais.client.utils.Utils.getStringNotNull;
 import static com.swisscom.ais.client.utils.Utils.valueNotNull;
 
 @SuppressWarnings("unused")
-public class UserData {
+public class UserData extends AbstractUserData {
 
-    private String transactionId;
 
     private String claimedIdentityName;
     private String claimedIdentityKey;
@@ -43,10 +42,6 @@ public class UserData {
     private String stepUpMessage;
     private String stepUpSerialNumber;
 
-    private String signatureName;
-    private String signatureReason;
-    private String signatureLocation;
-    private String signatureContactInfo;
 
     private ConsentUrlCallback consentUrlCallback;
 
@@ -164,38 +159,6 @@ public class UserData {
 
     public void setStepUpSerialNumber(String stepUpSerialNumber) {
         this.stepUpSerialNumber = stepUpSerialNumber;
-    }
-
-    public String getSignatureName() {
-        return signatureName;
-    }
-
-    public void setSignatureName(String signatureName) {
-        this.signatureName = signatureName;
-    }
-
-    public String getSignatureReason() {
-        return signatureReason;
-    }
-
-    public void setSignatureReason(String signatureReason) {
-        this.signatureReason = signatureReason;
-    }
-
-    public String getSignatureLocation() {
-        return signatureLocation;
-    }
-
-    public void setSignatureLocation(String signatureLocation) {
-        this.signatureLocation = signatureLocation;
-    }
-
-    public String getSignatureContactInfo() {
-        return signatureContactInfo;
-    }
-
-    public void setSignatureContactInfo(String signatureContactInfo) {
-        this.signatureContactInfo = signatureContactInfo;
     }
 
     // ----------------------------------------------------------------------------------------------------

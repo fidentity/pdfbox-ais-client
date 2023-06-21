@@ -15,6 +15,8 @@
  */
 package com.swisscom.ais.client.rest;
 
+import com.swisscom.ais.client.rest.model.etsi.ETSISignResponse;
+import com.swisscom.ais.client.rest.model.etsi.ETSISigningRequest;
 import com.swisscom.ais.client.rest.model.pendingreq.AISPendingRequest;
 import com.swisscom.ais.client.rest.model.signreq.AISSignRequest;
 import com.swisscom.ais.client.rest.model.signresp.AISSignResponse;
@@ -28,4 +30,5 @@ public interface RestClient extends Closeable {
 
     AISSignResponse pollForSignatureStatus(AISPendingRequest request, Trace trace);
 
+    ETSISignResponse signETSI(ETSISigningRequest signingRequest, Trace trace);
 }

@@ -15,15 +15,17 @@
  */
 package com.swisscom.ais.client;
 
+import com.swisscom.ais.client.impl.AISETSIClientImpl;
 import com.swisscom.ais.client.impl.AisClientImpl;
 import com.swisscom.ais.client.impl.ClientVersionProvider;
-import com.swisscom.ais.client.model.PdfHandle;
-import com.swisscom.ais.client.model.SignatureResult;
-import com.swisscom.ais.client.model.SignatureStandard;
-import com.swisscom.ais.client.model.UserData;
+import com.swisscom.ais.client.impl.PdfDocument;
+import com.swisscom.ais.client.model.*;
 import com.swisscom.ais.client.rest.RestClientConfiguration;
+import com.swisscom.ais.client.rest.RestClientETSIAuthenticationImpl;
 import com.swisscom.ais.client.rest.RestClientImpl;
+import com.swisscom.ais.client.rest.model.etsi.ETSISignResponse;
 import com.swisscom.ais.client.utils.Loggers;
+import com.swisscom.ais.client.utils.Trace;
 import com.swisscom.ais.client.utils.Utils;
 
 import org.slf4j.LoggerFactory;
@@ -60,6 +62,7 @@ public class Cli {
     private static final String TYPE_ON_DEMAND = "ondemand";
     private static final String TYPE_ON_DEMAND_STEP_UP = "ondemand-stepup";
     private static final String TYPE_TIMESTAMP = "timestamp";
+    private static final String ETSI = "etsi";
 
     // ----------------------------------------------------------------------------------------------------
 
@@ -104,7 +107,14 @@ public class Cli {
 
         Properties properties = new Properties();
         properties.load(new FileInputStream(configFile));
+        if (ETSI.equals(type)) {
+            signWithETSI(properties);
+        } else {
+            signWithDSS(properties);
+        }
+    }
 
+    private static void signWithDSS(Properties properties) throws IOException {
         RestClientConfiguration restConfig = new RestClientConfiguration();
         restConfig.setFromProperties(properties);
 
@@ -113,7 +123,6 @@ public class Cli {
 
         AisClientConfiguration aisConfig = new AisClientConfiguration();
         aisConfig.setFromProperties(properties);
-
         try (AisClientImpl aisClient = new AisClientImpl(aisConfig, restClient)) {
             UserData userData = new UserData();
             userData.setFromProperties(properties);
@@ -167,7 +176,47 @@ public class Cli {
         }
     }
 
+    private static void signWithETSI(Properties properties) throws IOException {
+        RestClientConfiguration config = new RestClientConfiguration();
+        config.setETSIFromProperties(properties);
+
+        RestClientConfiguration etsiConfig = RestClientConfiguration.createEtsiConfig(properties);
+        RestClientETSIAuthenticationImpl raxRestClient = new RestClientETSIAuthenticationImpl(etsiConfig);
+
+        RestClientImpl aisRestClient = new RestClientImpl();
+        aisRestClient.setConfiguration(config);
+
+
+        try (AISETSIClientImpl aisClient = new AISETSIClientImpl(aisRestClient, raxRestClient)) {
+            ETSIUserData userData = new ETSIUserData();
+            userData.setFromPropertiesForETSI(properties);
+            Trace trace = new Trace(userData.getTransactionId());
+
+            PdfHandle document = new PdfHandle();
+            document.setInputFromFile(properties.getProperty("local.test.inputFile"));
+            document.setOutputToFile(properties.getProperty("local.test.outputFilePrefix") + getTimeNow() + ".pdf");
+
+            //prepare document hash
+            PdfDocument prepareDocumentForSigning = aisClient.prepareDocumentForSigning(document, userData, trace);
+            //open browser and get code for JWT
+            String code = aisClient.getCodeFromConsole(properties, prepareDocumentForSigning);
+            //get token with the code
+
+            System.out.println(prepareDocumentForSigning.getBase64HashToSign());
+            String jwtToken = aisClient.getJWTToken(code, trace);
+
+            ETSISignResponse result = aisClient.signOnDemandWithETSI(prepareDocumentForSigning, userData, trace, jwtToken);
+            System.out.println(SEPARATOR);
+            System.out.println("Final result: " + result);
+            System.out.println(SEPARATOR);
+        }
+    }
     // ----------------------------------------------------------------------------------------------------
+
+    private static String getTimeNow() {
+        LocalDateTime now = LocalDateTime.now();
+        return "on" + now.getYear() + "-" + now.getMonthValue() + "-" + now.getDayOfMonth() + " at " + now.getHour() + "-" + now.getMinute() + "-" + now.getSecond();
+    }
 
     private static void parseArguments(String[] args) {
         if (args.length == 0) {
@@ -243,7 +292,7 @@ public class Cli {
                         argIndex++;
                     } else {
                         showHelp("Config file name is missing. "
-                                 + "If you need a sample config file, run this program with the -init argument");
+                                + "If you need a sample config file, run this program with the -init argument");
                     }
                     break;
                 }
@@ -297,9 +346,11 @@ public class Cli {
 
     private static void runInit() {
         String[][] configPairs = new String[][]{
-            new String[]{"/cli-files/config-sample.properties", "config.properties"},
-            new String[]{"/cli-files/config-help.properties", "config-help.properties"},
-            new String[]{"/cli-files/logback-sample.xml", "logback.xml"}
+                new String[]{"/cli-files/config-sample.properties", "config.properties"},
+                new String[]{"/cli-files/config-help.properties", "config-help.properties"},
+                new String[]{"/cli-files/logback-sample.xml", "logback.xml"},
+                new String[]{"/cli-files/etsi-sample.properties", "etsi-config.properties"},
+                new String[]{"/cli-files/etsi-help.properties", "etsi-help.properties"}
         };
         for (String[] configPair : configPairs) {
             String inputFile = configPair[0];

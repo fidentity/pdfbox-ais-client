@@ -36,11 +36,15 @@ public class RestClientConfiguration {
     private String restServiceSignUrl = "https://ais.swisscom.com/AIS-Server/rs/v1.0/sign";
     private String restServicePendingUrl = "https://ais.swisscom.com/AIS-Server/rs/v1.0/pending";
 
+    private String aisSigningUrl;
+
     private String clientKeyFile;
     private String clientKeyPassword;
 
     private String clientCertificateFile;
     private String serverCertificateFile;
+
+    private boolean isSSLCheckDisabled;
 
     private int maxTotalConnections = CLIENT_MAX_CONNECTION_TOTAL;
     private int maxConnectionsPerRoute = CLIENT_MAX_CONNECTIONS_PER_ROUTE;
@@ -59,13 +63,18 @@ public class RestClientConfiguration {
 
     // ----------------------------------------------------------------------------------------------------
 
+    private ETSIConfigProps etsiConfigProps;
+
+    // ----------------------------------------------------------------------------------------------------
+
+
     public String getClientKeyFile() {
         return clientKeyFile;
     }
 
     public void setClientKeyFile(String clientKeyFile) {
         valueNotEmpty(clientKeyFile,
-                      "The clientKeyFile parameter of the REST client configuration must not be empty", null);
+                "The clientKeyFile parameter of the REST client configuration must not be empty", null);
         this.clientKeyFile = clientKeyFile;
     }
 
@@ -83,7 +92,7 @@ public class RestClientConfiguration {
 
     public void setClientCertificateFile(String clientCertificateFile) {
         valueNotEmpty(clientCertificateFile,
-                      "The clientCertificateFile parameter of the REST client configuration must not be empty", null);
+                "The clientCertificateFile parameter of the REST client configuration must not be empty", null);
         this.clientCertificateFile = clientCertificateFile;
     }
 
@@ -101,7 +110,7 @@ public class RestClientConfiguration {
 
     public void setRestServiceSignUrl(String restServiceSignUrl) {
         valueNotEmpty(restServiceSignUrl,
-                      "The restServiceSignUrl parameter of the REST client configuration must not be empty", null);
+                "The restServiceSignUrl parameter of the REST client configuration must not be empty", null);
         this.restServiceSignUrl = restServiceSignUrl;
     }
 
@@ -111,8 +120,24 @@ public class RestClientConfiguration {
 
     public void setRestServicePendingUrl(String restServicePendingUrl) {
         valueNotEmpty(restServicePendingUrl,
-                      "The restServicePendingUrl parameter of the REST client configuration must not be empty", null);
+                "The restServicePendingUrl parameter of the REST client configuration must not be empty", null);
         this.restServicePendingUrl = restServicePendingUrl;
+    }
+
+    public String getAisSigningUrl() {
+        return aisSigningUrl;
+    }
+
+    public void setAisSigningUrl(String aisSigningUrl) {
+        this.aisSigningUrl = aisSigningUrl;
+    }
+
+    public boolean isSSLCheckDisabled() {
+        return isSSLCheckDisabled;
+    }
+
+    public void setSSLCheckDisabled(boolean SSLCheckDisabled) {
+        isSSLCheckDisabled = SSLCheckDisabled;
     }
 
     public int getMaxTotalConnections() {
@@ -121,7 +146,7 @@ public class RestClientConfiguration {
 
     public void setMaxTotalConnections(int maxTotalConnections) {
         valueBetween(maxTotalConnections, 2, 100,
-                     "The maxTotalConnections parameter of the REST client configuration must be between 2 and 100", null);
+                "The maxTotalConnections parameter of the REST client configuration must be between 2 and 100", null);
         this.maxTotalConnections = maxTotalConnections;
     }
 
@@ -131,7 +156,7 @@ public class RestClientConfiguration {
 
     public void setMaxConnectionsPerRoute(int maxConnectionsPerRoute) {
         valueBetween(maxConnectionsPerRoute, 2, 100,
-                     "The maxConnectionsPerRoute parameter of the REST client configuration must be between 2 and 100", null);
+                "The maxConnectionsPerRoute parameter of the REST client configuration must be between 2 and 100", null);
         this.maxConnectionsPerRoute = maxConnectionsPerRoute;
     }
 
@@ -141,7 +166,7 @@ public class RestClientConfiguration {
 
     public void setConnectionTimeoutInSec(int connectionTimeoutInSec) {
         valueBetween(connectionTimeoutInSec, 2, 100,
-                     "The connectionTimeoutInSec parameter of the REST client configuration must be between 2 and 100", null);
+                "The connectionTimeoutInSec parameter of the REST client configuration must be between 2 and 100", null);
         this.connectionTimeoutInSec = connectionTimeoutInSec;
     }
 
@@ -151,7 +176,7 @@ public class RestClientConfiguration {
 
     public void setResponseTimeoutInSec(int responseTimeoutInSec) {
         valueBetween(responseTimeoutInSec, 2, 100,
-                     "The responseTimeoutInSec parameter of the REST client configuration must be between 2 and 100", null);
+                "The responseTimeoutInSec parameter of the REST client configuration must be between 2 and 100", null);
         this.responseTimeoutInSec = responseTimeoutInSec;
     }
 
@@ -203,6 +228,15 @@ public class RestClientConfiguration {
         this.proxyPassword = proxyPassword;
     }
 
+    public ETSIConfigProps getEtsiConfigProps() {
+        return etsiConfigProps;
+    }
+
+    public void setEtsiConfigProps(ETSIConfigProps etsiConfigProps) {
+        this.etsiConfigProps = etsiConfigProps;
+    }
+
+
     // ----------------------------------------------------------------------------------------------------
 
     @SuppressWarnings("unused")
@@ -240,6 +274,37 @@ public class RestClientConfiguration {
         setEnableProxyAuth(getBooleanNotNull(provider, "server.rest.proxy.enableAuthentication"));
         setProxyPassword(provider.getProperty("server.rest.proxy.password"));
         setProxyUsername(provider.getProperty("server.rest.proxy.username"));
+        setETSIAIS(provider);
+        setSSLCheckDisabled(Boolean.parseBoolean(provider.getProperty("ais.jvm.ssl.check.disabled")));
+
     }
 
+    public void setETSIFromProperties(Properties properties) {
+        setETSIAIS(new ConfigurationProviderPropertiesImpl(properties));
+    }
+
+    private void setETSIAIS(ConfigurationProvider provider) {
+        setAisSigningUrl(getStringNotNull(provider, "etsi.ais.sign.url"));
+        setClientKeyFile(getStringNotNull(provider, "client.auth.keyFile"));
+        setClientKeyPassword(provider.getProperty("client.auth.keyPassword"));
+        setClientCertificateFile(getStringNotNull(provider, "client.cert.file"));
+        setSSLCheckDisabled(Boolean.parseBoolean(provider.getProperty("rax.jvm.ssl.check.disabled")));
+    }
+
+    public void setEtsiFromProperties(Properties properties) {
+        ConfigurationProviderPropertiesImpl provider = new ConfigurationProviderPropertiesImpl(properties);
+        setClientCertificateFile(getStringNotNull(provider, "etsi.crt.file"));
+        setClientKeyFile(getStringNotNull(provider, "etsi.crt.key"));
+        ETSIConfigProps etsiConfigProps = new ETSIConfigProps();
+        etsiConfigProps.setOidcUrl(getStringNotNull(provider, "etsi.oidcUrl"));
+        etsiConfigProps.setClientId(getStringNotNull(provider, "etsi.clientId"));
+        etsiConfigProps.setClientSecret(getStringNotNull(provider, "etsi.client.secret"));
+        setEtsiConfigProps(etsiConfigProps);
+    }
+
+    public static RestClientConfiguration createEtsiConfig(Properties properties) {
+        RestClientConfiguration restClientConfiguration = new RestClientConfiguration();
+        restClientConfiguration.setEtsiFromProperties(properties);
+        return restClientConfiguration;
+    }
 }

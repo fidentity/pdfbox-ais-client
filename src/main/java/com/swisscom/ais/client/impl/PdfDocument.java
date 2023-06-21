@@ -16,14 +16,12 @@
 package com.swisscom.ais.client.impl;
 
 import com.swisscom.ais.client.AisClientException;
-import com.swisscom.ais.client.model.UserData;
+import com.swisscom.ais.client.model.AbstractUserData;
 import com.swisscom.ais.client.model.VisibleSignatureDefinition;
 import com.swisscom.ais.client.rest.model.DigestAlgorithm;
 import com.swisscom.ais.client.rest.model.SignatureType;
 import com.swisscom.ais.client.utils.Trace;
 import com.swisscom.ais.client.utils.Utils;
-
-import org.apache.commons.codec.binary.StringUtils;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -42,11 +40,7 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.ExternalSigningSupport;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSeedValue;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSeedValueMDP;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.*;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
@@ -96,7 +90,7 @@ public class PdfDocument implements Closeable {
 
     public void prepareForSigning(DigestAlgorithm digestAlgorithm,
                                   SignatureType signatureType,
-                                  UserData userData) throws IOException, NoSuchAlgorithmException {
+                                  AbstractUserData userData) throws IOException, NoSuchAlgorithmException {
         this.digestAlgorithm = digestAlgorithm;
         id = Utils.generateDocumentId();
         pdDocument = PDDocument.load(contentIn);
@@ -104,7 +98,7 @@ public class PdfDocument implements Closeable {
         int accessPermissions = getDocumentPermissions();
         if (accessPermissions == 1) {
             throw new AisClientException("Cannot sign document [" + name + "]. Document contains a certification " +
-                                         "that does not allow any changes.");
+                    "that does not allow any changes.");
         }
 
         PDSignature pdSignature = new PDSignature();
@@ -139,12 +133,12 @@ public class PdfDocument implements Closeable {
         // create a visible signature at the specified coordinates
         if (signatureDefinition != null) {
             Rectangle2D
-                humanRect =
-                new Rectangle2D.Float(signatureDefinition.getX(), signatureDefinition.getY(), signatureDefinition.getWidth(),
-                                      signatureDefinition.getHeight());
+                    humanRect =
+                    new Rectangle2D.Float(signatureDefinition.getX(), signatureDefinition.getY(), signatureDefinition.getWidth(),
+                            signatureDefinition.getHeight());
             PDRectangle rect = createSignatureRectangle(pdDocument, humanRect);
             options.setVisualSignature(
-                createVisualSignatureTemplate(pdDocument, signatureDefinition.getPage(), signatureDefinition.getIconPath(), rect, pdSignature));
+                    createVisualSignatureTemplate(pdDocument, signatureDefinition.getPage(), signatureDefinition.getIconPath(), rect, pdSignature));
             options.setPage(signatureDefinition.getPage());
         }
 
@@ -202,8 +196,8 @@ public class PdfDocument implements Closeable {
      * Get the permissions for this document from the DocMDP transform parameters dictionary.
      *
      * @return the permission integer value. 0 means no DocMDP transform parameters dictionary exists. Other
-     *     returned values are 1, 2 or 3. 2 is also returned if the DocMDP dictionary is found but did not
-     *     contain a /P entry, or if the value is outside the valid range.
+     * returned values are 1, 2 or 3. 2 is also returned if the DocMDP dictionary is found but did not
+     * contain a /P entry, or if the value is outside the valid range.
      */
     private int getDocumentPermissions() {
         COSBase base = pdDocument.getDocumentCatalog().getCOSObject().getDictionaryObject(COSName.PERMS);
@@ -322,7 +316,7 @@ public class PdfDocument implements Closeable {
 
     // create a template PDF document with empty signature and return it as a stream.
     private InputStream createVisualSignatureTemplate(PDDocument srcDoc, int pageNum, String iconPath, PDRectangle rect, PDSignature signature)
-        throws IOException {
+            throws IOException {
         try (PDDocument doc = new PDDocument()) {
             PDPage page = new PDPage(srcDoc.getPage(pageNum).getMediaBox());
             doc.addPage(page);
@@ -351,7 +345,7 @@ public class PdfDocument implements Closeable {
                 case 90:
                     form.setMatrix(AffineTransform.getQuadrantRotateInstance(1));
                     initialScale = Matrix.getScaleInstance(bbox.getWidth() / bbox.getHeight(),
-                                                           bbox.getHeight() / bbox.getWidth());
+                            bbox.getHeight() / bbox.getWidth());
                     height = bbox.getWidth();
                     break;
                 case 180:
@@ -360,7 +354,7 @@ public class PdfDocument implements Closeable {
                 case 270:
                     form.setMatrix(AffineTransform.getQuadrantRotateInstance(3));
                     initialScale = Matrix.getScaleInstance(bbox.getWidth() / bbox.getHeight(),
-                                                           bbox.getHeight() / bbox.getWidth());
+                            bbox.getHeight() / bbox.getWidth());
                     height = bbox.getWidth();
                     break;
                 case 0:
@@ -385,7 +379,7 @@ public class PdfDocument implements Closeable {
                     cs.transform(initialScale);
                 }
 
-                if(iconPath != null) {
+                if (iconPath != null) {
                     File image = new File(iconPath);
                     if (image != null && image.exists()) {
                         // show background image
