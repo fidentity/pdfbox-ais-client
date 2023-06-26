@@ -49,4 +49,24 @@ public class ETSIUserData extends AbstractUserData {
     public String getConformanceLevel() {
         return conformanceLevel;
     }
+
+    public void setCredentialID(String credentialID) {
+        this.credentialID = credentialID;
+    }
+
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
+
+    public void setHashAlgorithmOID(String hashAlgorithmOID) {
+        this.hashAlgorithmOID = hashAlgorithmOID;
+    }
+
+    public void setSignatureFormat(String signatureFormat) {
+        this.signatureFormat = signatureFormat;
+    }
+
+    public void setConformanceLevel(String conformanceLevel) {
+        this.conformanceLevel = conformanceLevel;
+    }
 }

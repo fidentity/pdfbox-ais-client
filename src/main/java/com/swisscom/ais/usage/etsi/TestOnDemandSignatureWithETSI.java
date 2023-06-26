@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.swisscom.ais;
+package com.swisscom.ais.usage.etsi;
 
 import com.swisscom.ais.client.impl.AISETSIClientImpl;
 import com.swisscom.ais.client.impl.PdfDocument;
@@ -23,6 +23,7 @@ import com.swisscom.ais.client.rest.RestClientConfiguration;
 import com.swisscom.ais.client.rest.RestClientETSIAuthenticationImpl;
 import com.swisscom.ais.client.rest.RestClientImpl;
 import com.swisscom.ais.client.rest.model.etsi.ETSISignResponse;
+import com.swisscom.ais.client.rest.model.etsi.auth.RAXCodeUrlParameters;
 import com.swisscom.ais.client.utils.Trace;
 
 import java.time.LocalDateTime;
@@ -56,7 +57,7 @@ public class TestOnDemandSignatureWithETSI {
             //prepare document hash
             PdfDocument prepareDocumentForSigning = aisClient.prepareDocumentForSigning(document, userData, trace);
             //open browser and get code for JWT
-            String code = aisClient.getCodeFromConsole(properties, prepareDocumentForSigning);
+            String code = aisClient.getCodeFromConsole(new RAXCodeUrlParameters().fromProperties(properties), prepareDocumentForSigning, true);
             //get token with the code
 
             System.out.println(prepareDocumentForSigning.getBase64HashToSign());

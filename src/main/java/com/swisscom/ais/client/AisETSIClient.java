@@ -4,10 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.swisscom.ais.client.impl.PdfDocument;
 import com.swisscom.ais.client.model.*;
 import com.swisscom.ais.client.rest.model.etsi.ETSISignResponse;
+import com.swisscom.ais.client.rest.model.etsi.auth.RAXCodeUrlParameters;
 import com.swisscom.ais.client.utils.Trace;
 
 import java.io.Closeable;
-import java.util.Properties;
 
 public interface AisETSIClient extends Closeable {
 
@@ -18,7 +18,7 @@ public interface AisETSIClient extends Closeable {
 
     PdfDocument prepareDocumentForSigning(PdfHandle documentHandler, AbstractUserData userData, Trace trace);
 
-    String getCodeFromConsole(Properties properties, PdfDocument prepareDocumentForSigning) throws JsonProcessingException;
+    String getCodeFromConsole(RAXCodeUrlParameters urlDetails, PdfDocument prepareDocumentForSigning, boolean shouldOpenBrowser) throws JsonProcessingException;
 
     String getJWTToken(String code, Trace trace) throws JsonProcessingException;
 }

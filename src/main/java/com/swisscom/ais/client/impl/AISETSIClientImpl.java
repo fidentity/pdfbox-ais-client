@@ -15,10 +15,7 @@ import com.swisscom.ais.client.rest.model.SignatureType;
 import com.swisscom.ais.client.rest.model.etsi.DocumentDigests;
 import com.swisscom.ais.client.rest.model.etsi.ETSISignResponse;
 import com.swisscom.ais.client.rest.model.etsi.ETSISigningRequest;
-import com.swisscom.ais.client.rest.model.etsi.auth.AuthRequest;
-import com.swisscom.ais.client.rest.model.etsi.auth.DocumentsDigests;
-import com.swisscom.ais.client.rest.model.etsi.auth.TokenRequest;
-import com.swisscom.ais.client.rest.model.etsi.auth.TokenResponse;
+import com.swisscom.ais.client.rest.model.etsi.auth.*;
 import com.swisscom.ais.client.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,11 +65,10 @@ public class AISETSIClientImpl implements AisETSIClient {
     }
 
     @Override
-    public String getCodeFromConsole(Properties properties, PdfDocument prepareDocumentForSigning) throws JsonProcessingException {
-        String claims = claims(properties, prepareDocumentForSigning);
-        String url = createRAXUrl(properties, claims);
+    public String getCodeFromConsole(RAXCodeUrlParameters urlDetails, PdfDocument prepareDocumentForSigning, boolean shouldOpenBrowser) throws JsonProcessingException {
+        String claims = claims(urlDetails, prepareDocumentForSigning);
+        String url = createRAXUrl(urlDetails, claims);
         System.out.println("click url to retrieve JWT code: " + url);
-        boolean shouldOpenBrowser = Boolean.parseBoolean(properties.getProperty("open.browser"));
         if (shouldOpenBrowser) {
             openBrowserToRAX(url);
         }
@@ -111,12 +107,11 @@ public class AISETSIClientImpl implements AisETSIClient {
         return aisRestClient.signETSI(signingRequest, trace);
     }
 
-    private static String claims(Properties properties, PdfDocument prepareDocumentForSigning) throws JsonProcessingException {
-        String inputFromFile = properties.getProperty("local.test.inputFile");
+    private static String claims(RAXCodeUrlParameters urlDetails, PdfDocument prepareDocumentForSigning) throws JsonProcessingException {
         AuthRequest raxAuthRequest = new AuthRequest();
-        raxAuthRequest.setHashAlgorithmOID(properties.getProperty("etsi.hash.algorithmOID"));
-        raxAuthRequest.setCredentialID(properties.getProperty("etsi.credentialID"));
-        String[] split = inputFromFile.split("/");
+        raxAuthRequest.setHashAlgorithmOID(urlDetails.getHashAlgorithmOID());
+        raxAuthRequest.setCredentialID(urlDetails.getCredentialID());
+        String[] split = urlDetails.getInputFromFile().split("/");
         DocumentsDigests documentsDigests = new DocumentsDigests(prepareDocumentForSigning.getBase64HashToSign()
                 , split[split.length - 1]);
         raxAuthRequest.setDocumentDigests(Collections.singletonList(documentsDigests));
@@ -135,31 +130,16 @@ public class AISETSIClientImpl implements AisETSIClient {
         }
     }
 
-    private static String createRAXUrl(Properties properties, String claimsJson) {
-        ConfigurationProviderPropertiesImpl prov = new ConfigurationProviderPropertiesImpl(properties);
-        String raxURL = Utils.getStringNotNull(prov, "etsi.rax.url");
-        String state = Utils.getStringNotNull(prov, "etsi.rax.state");
-        String nonce = Utils.getStringNotNull(prov, "etsi.rax.nonce");
-        String code = getPropOrDefault(prov, "etsi.rax.response_type", "code");
-        String client_id = Utils.getStringNotNull(prov, "etsi.rax.client_id");
-        String scope = getPropOrDefault(prov, "etsi.rax.scope", "sign");
-        String redirectURI = Utils.getStringNotNull(prov, "etsi.rax.redirect_uri");
-        String challangeMethod = Utils.getStringNotNull(prov, "etsi.rax.code_challenge_method");
-
-        return raxURL +
-                "?" + "state" + "=" + URLEncoder.encode(state) +
-                "&" + "nonce" + "=" + URLEncoder.encode(nonce) +
-                "&" + "response_type" + "=" + URLEncoder.encode(code) +
-                "&" + "client_id" + "=" + URLEncoder.encode(client_id) +
-                "&" + "scope" + "=" + URLEncoder.encode(scope) +
-                "&" + "redirect_uri" + "=" + URLEncoder.encode(redirectURI) +
-                "&" + "code_challenge_method" + "=" + URLEncoder.encode(challangeMethod) +
+    private static String createRAXUrl(RAXCodeUrlParameters urlDetails, String claimsJson) {
+        return urlDetails.getRaxURL() +
+                "?" + "state" + "=" + URLEncoder.encode(urlDetails.getState()) +
+                "&" + "nonce" + "=" + URLEncoder.encode(urlDetails.getNonce()) +
+                "&" + "response_type" + "=" + URLEncoder.encode(urlDetails.getCode()) +
+                "&" + "client_id" + "=" + URLEncoder.encode(urlDetails.getClient_id()) +
+                "&" + "scope" + "=" + URLEncoder.encode(urlDetails.getScope()) +
+                "&" + "redirect_uri" + "=" + URLEncoder.encode(urlDetails.getRedirectURI()) +
+                "&" + "code_challenge_method" + "=" + URLEncoder.encode(urlDetails.getChallangeMethod()) +
                 "&" + "claims" + "=" + URLEncoder.encode(claimsJson);
-    }
-
-
-    private static String getPropOrDefault(ConfigurationProviderPropertiesImpl configurationProviderProperties, String prop, String defaultVale) {
-        return configurationProviderProperties.getProperty(prop) != null ? configurationProviderProperties.getProperty(prop) : defaultVale;
     }
 
     @Override

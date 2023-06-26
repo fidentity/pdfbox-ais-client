@@ -24,6 +24,7 @@ import com.swisscom.ais.client.rest.RestClientConfiguration;
 import com.swisscom.ais.client.rest.RestClientETSIAuthenticationImpl;
 import com.swisscom.ais.client.rest.RestClientImpl;
 import com.swisscom.ais.client.rest.model.etsi.ETSISignResponse;
+import com.swisscom.ais.client.rest.model.etsi.auth.RAXCodeUrlParameters;
 import com.swisscom.ais.client.utils.Loggers;
 import com.swisscom.ais.client.utils.Trace;
 import com.swisscom.ais.client.utils.Utils;
@@ -199,7 +200,10 @@ public class Cli {
             //prepare document hash
             PdfDocument prepareDocumentForSigning = aisClient.prepareDocumentForSigning(document, userData, trace);
             //open browser and get code for JWT
-            String code = aisClient.getCodeFromConsole(properties, prepareDocumentForSigning);
+            boolean shouldOpenBrowser = Boolean.parseBoolean(properties.getProperty("open.browser"));
+
+            RAXCodeUrlParameters RAXCodeUrlParameters = new RAXCodeUrlParameters().fromProperties(properties);
+            String code = aisClient.getCodeFromConsole(RAXCodeUrlParameters, prepareDocumentForSigning, shouldOpenBrowser);
             //get token with the code
 
             System.out.println(prepareDocumentForSigning.getBase64HashToSign());

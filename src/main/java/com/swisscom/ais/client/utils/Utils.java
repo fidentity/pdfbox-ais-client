@@ -166,6 +166,10 @@ public class Utils {
         return value != null && value.trim().length() > 0;
     }
 
+    public static String getPropOrDefault(ConfigurationProvider configurationProviderProperties, String prop, String defaultVale) {
+        return configurationProviderProperties.getProperty(prop) != null ? configurationProviderProperties.getProperty(prop) : defaultVale;
+    }
+
     public static void closeResource(Closeable resource, Trace trace) {
         try {
             if (Objects.nonNull(resource)) {
