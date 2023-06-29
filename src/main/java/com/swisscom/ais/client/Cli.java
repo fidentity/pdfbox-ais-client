@@ -194,8 +194,12 @@ public class Cli {
             Trace trace = new Trace(userData.getTransactionId());
 
             PdfHandle document = new PdfHandle();
-            document.setInputFromFile(properties.getProperty("local.test.inputFile"));
-            document.setOutputToFile(properties.getProperty("local.test.outputFilePrefix") + getTimeNow() + ".pdf");
+            document.setInputFromFile(inputFileList.get(0));
+            if (outputFile != null) {
+                document.setOutputToFile(outputFile);
+            } else {
+                document.setOutputToFile(properties.getProperty("local.test.outputFilePrefix") + getTimeNow() + ".pdf");
+            }
 
             //prepare document hash
             PdfDocument prepareDocumentForSigning = aisClient.prepareDocumentForSigning(document, userData, trace);
