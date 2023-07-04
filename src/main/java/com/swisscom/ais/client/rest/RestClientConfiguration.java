@@ -274,7 +274,6 @@ public class RestClientConfiguration {
         setEnableProxyAuth(getBooleanNotNull(provider, "server.rest.proxy.enableAuthentication"));
         setProxyPassword(provider.getProperty("server.rest.proxy.password"));
         setProxyUsername(provider.getProperty("server.rest.proxy.username"));
-        setETSIAIS(provider);
         setSSLCheckDisabled(Boolean.parseBoolean(provider.getProperty("ais.jvm.ssl.check.disabled")));
 
     }
