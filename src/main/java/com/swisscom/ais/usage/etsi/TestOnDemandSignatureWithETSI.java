@@ -33,7 +33,7 @@ public class TestOnDemandSignatureWithETSI {
 
     public static void main(String[] args) throws Exception {
         Properties properties = new Properties();
-        properties.load(TestOnDemandSignatureWithETSI.class.getResourceAsStream("/etsi-config.properties"));
+        properties.load(TestOnDemandSignatureWithETSI.class.getResourceAsStream("/prod/etsi-config.properties"));
 
         RestClientConfiguration config = new RestClientConfiguration();
         config.setETSIFromProperties(properties);
