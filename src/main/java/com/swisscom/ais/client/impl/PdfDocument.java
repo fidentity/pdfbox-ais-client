@@ -15,7 +15,7 @@
  */
 package com.swisscom.ais.client.impl;
 
-import com.swisscom.ais.client.AisClientException;
+import com.swisscom.ais.client.RestClientException;
 import com.swisscom.ais.client.model.AbstractUserData;
 import com.swisscom.ais.client.model.VisibleSignatureDefinition;
 import com.swisscom.ais.client.rest.model.DigestAlgorithm;
@@ -97,7 +97,7 @@ public class PdfDocument implements Closeable {
 
         int accessPermissions = getDocumentPermissions();
         if (accessPermissions == 1) {
-            throw new AisClientException("Cannot sign document [" + name + "]. Document contains a certification " +
+            throw new RestClientException("Cannot sign document [" + name + "]. Document contains a certification " +
                     "that does not allow any changes.");
         }
 
@@ -178,7 +178,7 @@ public class PdfDocument implements Closeable {
             }
             closeResource(contentOut, trace);
         } catch (Exception e) {
-            throw new AisClientException("Failed to embed the signature(s) in the document(s) and close the streams - " + trace.getId(), e);
+            throw new RestClientException("Failed to embed the signature(s) in the document(s) and close the streams - " + trace.getId(), e);
         }
     }
 
@@ -394,7 +394,7 @@ public class PdfDocument implements Closeable {
 
                 // show text
                 float fontSize = 8;
-                float leading = fontSize * 1.5f;
+                float leading = fontSize * 0.3f;
                 cs.beginText();
                 cs.setFont(font, fontSize);
                 cs.setNonStrokingColor(Color.black);

@@ -15,7 +15,7 @@
  */
 package com.swisscom.ais.client.rest.model;
 
-import com.swisscom.ais.client.AisClientException;
+import com.swisscom.ais.client.RestClientException;
 
 public enum DigestAlgorithm {
 
@@ -58,7 +58,7 @@ public enum DigestAlgorithm {
                 return currentAlgo;
             }
         }
-        throw new AisClientException("Invalid digest algorithm: " + algo);
+        throw new RestClientException("Invalid digest algorithm: " + algo);
     }
 
 }

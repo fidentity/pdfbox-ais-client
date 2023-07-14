@@ -17,7 +17,7 @@ package com.swisscom.ais.client.impl;
 
 import com.swisscom.ais.client.AisClient;
 import com.swisscom.ais.client.AisClientConfiguration;
-import com.swisscom.ais.client.AisClientException;
+import com.swisscom.ais.client.RestClientException;
 import com.swisscom.ais.client.model.PdfHandle;
 import com.swisscom.ais.client.model.SignatureMode;
 import com.swisscom.ais.client.model.SignatureResult;
@@ -169,7 +169,7 @@ public class AisClientImpl implements AisClient {
                                                                              preparedAdditionalProfiles, withStepUp, withCertificateRequest);
                 signResponse = restClient.requestSignature(signRequest, trace);
             } catch (Exception e) {
-                throw new AisClientException("Failed to communicate with the AIS service and obtain the signature(s) - " + trace.getId(), e);
+                throw new RestClientException("Failed to communicate with the AIS service and obtain the signature(s) - " + trace.getId(), e);
             }
             if (withPolling) {
                 if (!checkThatResponseIsPending(signResponse)) {
@@ -242,7 +242,7 @@ public class AisClientImpl implements AisClient {
             response.getSignResponse() == null ||
             response.getSignResponse().getResult() == null ||
             response.getSignResponse().getResult().getResultMajor() == null) {
-            throw new AisClientException("Incomplete response received from the AIS service: " + response + " - " + trace.getId());
+            throw new RestClientException("Incomplete response received from the AIS service: " + response + " - " + trace.getId());
         }
         ResultMajorCode majorCode = ResultMajorCode.getByUri(response.getSignResponse().getResult().getResultMajor());
         ResultMinorCode minorCode = ResultMinorCode.getByUri(response.getSignResponse().getResult().getResultMinor());
@@ -295,7 +295,7 @@ public class AisClientImpl implements AisClient {
                 }
             }
         }
-        throw new AisClientException("Failure response received from AIS service: " +
+        throw new RestClientException("Failure response received from AIS service: " +
                                      ResponseHelper.getResponseResultSummary(response) + " - " + trace.getId());
     }
 
@@ -318,7 +318,7 @@ public class AisClientImpl implements AisClient {
                 }
             }
         } catch (Exception e) {
-            throw new AisClientException("Failed to poll AIS for the status of the signature(s) - " + trace.getId(), e);
+            throw new RestClientException("Failed to poll AIS for the status of the signature(s) - " + trace.getId(), e);
         }
         return localResponse;
     }

@@ -16,7 +16,7 @@
 package com.swisscom.ais.client.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.swisscom.ais.client.AisClientException;
+import com.swisscom.ais.client.RestClientException;
 import com.swisscom.ais.client.rest.model.etsi.ETSISignResponse;
 import com.swisscom.ais.client.rest.model.etsi.ETSISigningRequest;
 import com.swisscom.ais.client.rest.model.pendingreq.AISPendingRequest;
@@ -62,7 +62,7 @@ public class RestClientImpl extends AbstractRestClientImpl implements RestClient
         try {
             requestJson = jacksonMapper.writeValueAsString(signingRequest);
         } catch (JsonProcessingException e) {
-            throw new AisClientException("Failed to serialize request object to JSON, for operation " +
+            throw new RestClientException("Failed to serialize request object to JSON, for operation " +
                     operationName + " - " + trace.getId(), e);
         }
 
@@ -81,7 +81,7 @@ public class RestClientImpl extends AbstractRestClientImpl implements RestClient
             try {
                 responseJson = EntityUtils.toString(response.getEntity());
             } catch (ParseException e) {
-                throw new AisClientException("Failed to interpret the HTTP response content as a string, for operation " +
+                throw new RestClientException("Failed to interpret the HTTP response content as a string, for operation " +
                         operationName + " - " + trace.getId(), e);
             }
             logResponse(responseJson, operationName, trace, String.class.getSimpleName());
@@ -90,20 +90,20 @@ public class RestClientImpl extends AbstractRestClientImpl implements RestClient
                 try {
                     return jacksonMapper.readValue(responseJson, ETSISignResponse.class);
                 } catch (JsonProcessingException e) {
-                    throw new AisClientException("Failed to deserialize JSON content to object of type " +
+                    throw new RestClientException("Failed to deserialize JSON content to object of type " +
                             String.class.getSimpleName() + " for operation " +
                             operationName + " - " +
                             trace.getId(), e);
                 }
             } else {
-                throw new AisClientException("Received fault response: HTTP " +
+                throw new RestClientException("Received fault response: HTTP " +
                         response.getCode() + " " +
                         response.getReasonPhrase() + " - " + trace.getId());
             }
         } catch (SSLException e) {
-            throw new AisClientException("TLS/SSL connection failure for " + operationName + " - " + trace.getId(), e);
+            throw new RestClientException("TLS/SSL connection failure for " + operationName + " - " + trace.getId(), e);
         } catch (Exception e) {
-            throw new AisClientException("Communication failure for " + operationName + " - " + trace.getId(), e);
+            throw new RestClientException("Communication failure for " + operationName + " - " + trace.getId(), e);
         }
     }
 
@@ -118,7 +118,7 @@ public class RestClientImpl extends AbstractRestClientImpl implements RestClient
         try {
             requestJson = jacksonMapper.writeValueAsString(requestObject);
         } catch (JsonProcessingException e) {
-            throw new AisClientException("Failed to serialize request object to JSON, for operation " +
+            throw new RestClientException("Failed to serialize request object to JSON, for operation " +
                     operationName + " - " + trace.getId(), e);
         }
 
@@ -135,7 +135,7 @@ public class RestClientImpl extends AbstractRestClientImpl implements RestClient
             try {
                 responseJson = EntityUtils.toString(response.getEntity());
             } catch (ParseException e) {
-                throw new AisClientException("Failed to interpret the HTTP response content as a string, for operation " +
+                throw new RestClientException("Failed to interpret the HTTP response content as a string, for operation " +
                         operationName + " - " + trace.getId(), e);
             }
             if (response.getCode() == 200) {
@@ -143,20 +143,20 @@ public class RestClientImpl extends AbstractRestClientImpl implements RestClient
                 try {
                     return jacksonMapper.readValue(responseJson, responseClass);
                 } catch (JsonProcessingException e) {
-                    throw new AisClientException("Failed to deserialize JSON content to object of type " +
+                    throw new RestClientException("Failed to deserialize JSON content to object of type " +
                             responseClass.getSimpleName() + " for operation " +
                             operationName + " - " +
                             trace.getId(), e);
                 }
             } else {
-                throw new AisClientException("Received fault response: HTTP " +
+                throw new RestClientException("Received fault response: HTTP " +
                         response.getCode() + " " +
                         response.getReasonPhrase() + " - " + trace.getId());
             }
         } catch (SSLException e) {
-            throw new AisClientException("TLS/SSL connection failure for " + operationName + " - " + trace.getId(), e);
+            throw new RestClientException("TLS/SSL connection failure for " + operationName + " - " + trace.getId(), e);
         } catch (Exception e) {
-            throw new AisClientException("Communication failure for " + operationName + " - " + trace.getId(), e);
+            throw new RestClientException("Communication failure for " + operationName + " - " + trace.getId(), e);
         }
     }
 

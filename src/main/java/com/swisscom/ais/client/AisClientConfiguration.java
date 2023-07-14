@@ -36,7 +36,7 @@ public class AisClientConfiguration {
 
     public void setSignaturePollingIntervalInSeconds(int signaturePollingIntervalInSeconds) {
         if (signaturePollingIntervalInSeconds < 1 || signaturePollingIntervalInSeconds > 300) {
-            throw new AisClientException("The signaturePollingIntervalInSeconds parameter of the AIS client "
+            throw new RestClientException("The signaturePollingIntervalInSeconds parameter of the AIS client "
                                          + "configuration must be between 1 and 300 seconds");
         }
         this.signaturePollingIntervalInSeconds = signaturePollingIntervalInSeconds;
@@ -48,7 +48,7 @@ public class AisClientConfiguration {
 
     public void setSignaturePollingRounds(int signaturePollingRounds) {
         if (signaturePollingRounds < 1 || signaturePollingRounds > 100) {
-            throw new AisClientException("The signaturePollingRounds parameter of the AIS client "
+            throw new RestClientException("The signaturePollingRounds parameter of the AIS client "
                                          + "configuration must be between 1 and 100 rounds");
         }
         this.signaturePollingRounds = signaturePollingRounds;
@@ -63,7 +63,7 @@ public class AisClientConfiguration {
             properties = new Properties();
             properties.load(this.getClass().getResourceAsStream(fileName));
         } catch (IOException exception) {
-            throw new AisClientException("Failed to load AIS client properties from classpath file: [" + fileName + "]", exception);
+            throw new RestClientException("Failed to load AIS client properties from classpath file: [" + fileName + "]", exception);
         }
         setFromProperties(properties);
     }

@@ -3,7 +3,7 @@ package com.swisscom.ais.client.rest;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.swisscom.ais.client.AisClientException;
+import com.swisscom.ais.client.RestClientException;
 import com.swisscom.ais.client.utils.Loggers;
 import com.swisscom.ais.client.utils.Trace;
 import com.swisscom.ais.client.utils.Utils;
@@ -84,7 +84,7 @@ public abstract class AbstractRestClientImpl {
             }
             sslConnectionSocketFactory = new SSLConnectionSocketFactory(sslContextBuilder.build());
         } catch (Exception e) {
-            throw new AisClientException("Failed to configure the TLS/SSL connection factory for the AIS client", e);
+            throw new RestClientException("Failed to configure the TLS/SSL connection factory for the AIS client", e);
         }
 
         PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
@@ -203,7 +203,7 @@ public abstract class AbstractRestClientImpl {
             closeResource(is, null);
             return keyStore;
         } catch (Exception e) {
-            throw new AisClientException("Failed to initialize the TLS keystore", e);
+            throw new RestClientException("Failed to initialize the TLS keystore", e);
         }
     }
 
@@ -220,7 +220,7 @@ public abstract class AbstractRestClientImpl {
             closeResource(is, null);
             return keyStore;
         } catch (Exception e) {
-            throw new AisClientException("Failed to initialize the TLS truststore", e);
+            throw new RestClientException("Failed to initialize the TLS truststore", e);
         }
     }
 
@@ -241,7 +241,7 @@ public abstract class AbstractRestClientImpl {
                 Object pemKeyPair = pemParser.readObject();
                 if (pemKeyPair instanceof PEMEncryptedKeyPair) {
                     if (Utils.isEmpty(keyPassword)) {
-                        throw new AisClientException("The client private key is encrypted but there is no key password provided " +
+                        throw new RestClientException("The client private key is encrypted but there is no key password provided " +
                                 "(check field 'client.auth.keyPassword' from the config.properties or from " +
                                 "the REST client configuration)");
                     }
@@ -263,7 +263,7 @@ public abstract class AbstractRestClientImpl {
             JcaPEMKeyConverter jcaPEMKeyConverter = new JcaPEMKeyConverter();
             return jcaPEMKeyConverter.getPrivateKey(privateKeyInfo);
         } catch (Exception e) {
-            throw new AisClientException("Failed to initialize the client private key", e);
+            throw new RestClientException("Failed to initialize the client private key", e);
         }
     }
 

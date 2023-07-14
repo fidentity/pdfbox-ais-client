@@ -15,7 +15,7 @@
  */
 package com.swisscom.ais.client.utils;
 
-import com.swisscom.ais.client.AisClientException;
+import com.swisscom.ais.client.RestClientException;
 import com.swisscom.ais.client.Cli;
 
 import org.slf4j.Logger;
@@ -78,32 +78,32 @@ public class Utils {
         return source.replaceAll(pattern, replacement);
     }
 
-    public static void valueNotEmpty(String value, String errorMessage, Trace trace) throws AisClientException {
+    public static void valueNotEmpty(String value, String errorMessage, Trace trace) throws RestClientException {
         if (value == null || value.trim().length() == 0) {
             if (trace == null) {
-                throw new AisClientException(errorMessage);
+                throw new RestClientException(errorMessage);
             } else {
-                throw new AisClientException(errorMessage + " - " + trace.getId());
+                throw new RestClientException(errorMessage + " - " + trace.getId());
             }
         }
     }
 
-    public static void valueNotNull(Object value, String errorMessage, Trace trace) throws AisClientException {
+    public static void valueNotNull(Object value, String errorMessage, Trace trace) throws RestClientException {
         if (value == null) {
             if (trace == null) {
-                throw new AisClientException(errorMessage);
+                throw new RestClientException(errorMessage);
             } else {
-                throw new AisClientException(errorMessage + " - " + trace.getId());
+                throw new RestClientException(errorMessage + " - " + trace.getId());
             }
         }
     }
 
-    public static void valueBetween(int value, int minValue, int maxValue, String errorMessage, Trace trace) throws AisClientException {
+    public static void valueBetween(int value, int minValue, int maxValue, String errorMessage, Trace trace) throws RestClientException {
         if (value < minValue || value > maxValue) {
             if (trace == null) {
-                throw new AisClientException(errorMessage);
+                throw new RestClientException(errorMessage);
             } else {
-                throw new AisClientException(errorMessage + " - " + trace.getId());
+                throw new RestClientException(errorMessage + " - " + trace.getId());
             }
         }
     }
@@ -121,7 +121,7 @@ public class Utils {
             baos.close();
             return new String(baos.toByteArray(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new AisClientException("Failed to copy the file: [" + inputFile + "] to string");
+            throw new RestClientException("Failed to copy the file: [" + inputFile + "] to string");
         }
     }
 
@@ -137,7 +137,7 @@ public class Utils {
             is.close();
             fos.close();
         } catch (IOException e) {
-            throw new AisClientException("Failed to create the file: [" + outputFile + "]");
+            throw new RestClientException("Failed to create the file: [" + outputFile + "]");
         }
     }
 

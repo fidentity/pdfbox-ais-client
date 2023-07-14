@@ -2,7 +2,7 @@ package com.swisscom.ais.client.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.swisscom.ais.client.AisClientException;
+import com.swisscom.ais.client.RestClientException;
 import com.swisscom.ais.client.AisETSIClient;
 import com.swisscom.ais.client.model.AbstractUserData;
 import com.swisscom.ais.client.model.ETSIUserData;
@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.List;
@@ -42,7 +43,7 @@ public class AISETSIClientImpl implements AisETSIClient {
     }
 
     @Override
-    public ETSISignResponse signOnDemandWithETSI(PdfDocument pdfDocument, ETSIUserData userData, Trace trace, String tokenForETSISigning) throws AisClientException {
+    public ETSISignResponse signOnDemandWithETSI(PdfDocument pdfDocument, ETSIUserData userData, Trace trace, String tokenForETSISigning) throws RestClientException {
 
         ETSISignResponse etsiSignResponse = performSign(pdfDocument, tokenForETSISigning, trace, userData);
         List<byte[]> crlEntries = etsiSignResponse.getEtsiValidationInfo().getCrl().stream().map(crl -> Base64.getDecoder().decode(crl)).collect(Collectors.toList());
@@ -65,7 +66,7 @@ public class AISETSIClientImpl implements AisETSIClient {
     }
 
     @Override
-    public String getCodeFromConsole(RAXCodeUrlParameters urlDetails, PdfDocument prepareDocumentForSigning, boolean shouldOpenBrowser) throws JsonProcessingException {
+    public String getCodeFromConsole(RAXCodeUrlParameters urlDetails, PdfDocument prepareDocumentForSigning, boolean shouldOpenBrowser) throws JsonProcessingException, UnsupportedEncodingException {
         String claims = claims(urlDetails, prepareDocumentForSigning);
         String url = createRAXUrl(urlDetails, claims);
         System.out.println("click url to retrieve JWT code: " + url);
@@ -130,16 +131,16 @@ public class AISETSIClientImpl implements AisETSIClient {
         }
     }
 
-    private static String createRAXUrl(RAXCodeUrlParameters urlDetails, String claimsJson) {
+    private static String createRAXUrl(RAXCodeUrlParameters urlDetails, String claimsJson) throws UnsupportedEncodingException {
         return urlDetails.getRaxURL() +
-                "?" + "state" + "=" + URLEncoder.encode(urlDetails.getState()) +
-                "&" + "nonce" + "=" + URLEncoder.encode(urlDetails.getNonce()) +
-                "&" + "response_type" + "=" + URLEncoder.encode(urlDetails.getCode()) +
-                "&" + "client_id" + "=" + URLEncoder.encode(urlDetails.getClient_id()) +
-                "&" + "scope" + "=" + URLEncoder.encode(urlDetails.getScope()) +
-                "&" + "redirect_uri" + "=" + URLEncoder.encode(urlDetails.getRedirectURI()) +
-                "&" + "code_challenge_method" + "=" + URLEncoder.encode(urlDetails.getChallangeMethod()) +
-                "&" + "claims" + "=" + URLEncoder.encode(claimsJson);
+                "?" + "state" + "=" + URLEncoder.encode(urlDetails.getState(), "UTF-8") +
+                "&" + "nonce" + "=" + URLEncoder.encode(urlDetails.getNonce(), "UTF-8") +
+                "&" + "response_type" + "=" + URLEncoder.encode(urlDetails.getCode(), "UTF-8") +
+                "&" + "client_id" + "=" + URLEncoder.encode(urlDetails.getClient_id(), "UTF-8") +
+                "&" + "scope" + "=" + URLEncoder.encode(urlDetails.getScope(), "UTF-8") +
+                "&" + "redirect_uri" + "=" + URLEncoder.encode(urlDetails.getRedirectURI(), "UTF-8") +
+                "&" + "code_challenge_method" + "=" + URLEncoder.encode(urlDetails.getChallangeMethod(), "UTF-8") +
+                "&" + "claims" + "=" + URLEncoder.encode(claimsJson, "UTF-8");
     }
 
     @Override

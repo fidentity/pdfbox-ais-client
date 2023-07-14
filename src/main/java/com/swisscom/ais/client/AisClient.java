@@ -24,12 +24,12 @@ import java.util.List;
 
 public interface AisClient extends Closeable {
 
-    SignatureResult signWithStaticCertificate(List<PdfHandle> documentHandles, UserData userData) throws AisClientException;
+    SignatureResult signWithStaticCertificate(List<PdfHandle> documentHandles, UserData userData) throws RestClientException;
 
-    SignatureResult signWithOnDemandCertificate(List<PdfHandle> documentHandles, UserData userData) throws AisClientException;
+    SignatureResult signWithOnDemandCertificate(List<PdfHandle> documentHandles, UserData userData) throws RestClientException;
 
-    SignatureResult signWithOnDemandCertificateAndStepUp(List<PdfHandle> documentHandles, UserData userData) throws AisClientException;
+    SignatureResult signWithOnDemandCertificateAndStepUp(List<PdfHandle> documentHandles, UserData userData) throws RestClientException;
 
-    SignatureResult timestamp(List<PdfHandle> documentHandles, UserData userData) throws AisClientException;
+    SignatureResult timestamp(List<PdfHandle> documentHandles, UserData userData) throws RestClientException;
 
 }

@@ -1,6 +1,6 @@
 package com.swisscom.ais.client.utils;
 
-import com.swisscom.ais.client.AisClientException;
+import com.swisscom.ais.client.RestClientException;
 import com.swisscom.ais.client.impl.PdfDocument;
 import com.swisscom.ais.client.model.AbstractUserData;
 import com.swisscom.ais.client.model.PdfHandle;
@@ -27,7 +27,7 @@ public class DocumentUtils {
             newDocument.prepareForSigning(documentHandle.getDigestAlgorithm(), signatureType, userData);
             return newDocument;
         } catch (Exception e) {
-            throw new AisClientException("Failed to prepare the document [" +
+            throw new RestClientException("Failed to prepare the document [" +
                     documentHandle.getInputFromFile() + "] for " +
                     signatureMode.getFriendlyName() + " signing", e);
         }

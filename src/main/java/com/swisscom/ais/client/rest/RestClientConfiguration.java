@@ -15,7 +15,7 @@
  */
 package com.swisscom.ais.client.rest;
 
-import com.swisscom.ais.client.AisClientException;
+import com.swisscom.ais.client.RestClientException;
 import com.swisscom.ais.client.utils.ConfigurationProvider;
 import com.swisscom.ais.client.utils.ConfigurationProviderPropertiesImpl;
 
@@ -246,7 +246,7 @@ public class RestClientConfiguration {
             properties = new Properties();
             properties.load(this.getClass().getResourceAsStream(fileName));
         } catch (IOException exception) {
-            throw new AisClientException("Failed to load REST client properties from classpath file: [" + fileName + "]", exception);
+            throw new RestClientException("Failed to load REST client properties from classpath file: [" + fileName + "]", exception);
         }
         setFromProperties(properties);
     }
@@ -284,16 +284,17 @@ public class RestClientConfiguration {
 
     private void setETSIAIS(ConfigurationProvider provider) {
         setAisSigningUrl(getStringNotNull(provider, "etsi.ais.sign.url"));
-        setClientKeyFile(getStringNotNull(provider, "client.auth.keyFile"));
+        setClientKeyFile(getStringNotNull(provider, "etsi.crt.key"));
         setClientKeyPassword(provider.getProperty("client.auth.keyPassword"));
-        setClientCertificateFile(getStringNotNull(provider, "client.cert.file"));
+        setClientCertificateFile(getStringNotNull(provider, "etsi.crt.file"));
         setSSLCheckDisabled(Boolean.parseBoolean(provider.getProperty("rax.jvm.ssl.check.disabled")));
     }
 
     public void setEtsiFromProperties(Properties properties) {
         ConfigurationProviderPropertiesImpl provider = new ConfigurationProviderPropertiesImpl(properties);
-        setClientCertificateFile(getStringNotNull(provider, "etsi.crt.file"));
-        setClientKeyFile(getStringNotNull(provider, "etsi.crt.key"));
+        setClientCertificateFile(getStringNotNull(provider, "client.cert.file"));
+        setClientKeyFile(getStringNotNull(provider, "client.auth.keyFile"));
+        setClientKeyPassword(provider.getProperty("etsi.client.auth.keyPassword"));
         ETSIConfigProps etsiConfigProps = new ETSIConfigProps();
         etsiConfigProps.setOidcUrl(getStringNotNull(provider, "etsi.oidcUrl"));
         etsiConfigProps.setClientId(getStringNotNull(provider, "etsi.clientId"));

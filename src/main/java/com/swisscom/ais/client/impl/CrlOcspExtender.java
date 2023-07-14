@@ -15,7 +15,7 @@
  */
 package com.swisscom.ais.client.impl;
 
-import com.swisscom.ais.client.AisClientException;
+import com.swisscom.ais.client.RestClientException;
 import com.swisscom.ais.client.rest.model.SignatureType;
 import com.swisscom.ais.client.utils.Loggers;
 import com.swisscom.ais.client.utils.Trace;
@@ -97,7 +97,7 @@ public class CrlOcspExtender {
 
             PDSignature lastSignature = getLastRelevantSignature(pdDocument);
             if (lastSignature == null) {
-                throw new AisClientException("Cannot extend PDF with CRL and OCSP data. No signature was found in the PDF");
+                throw new RestClientException("Cannot extend PDF with CRL and OCSP data. No signature was found in the PDF");
             }
 
             ValidationData vData = new ValidationData();
@@ -165,7 +165,7 @@ public class CrlOcspExtender {
             pdDssDict.setItem(COSNAME_VRI, pdVriMapDict);
             cosDocumentCatalog.setItem(COSNAME_DSS, pdDssDict);
         } catch (Exception e) {
-            throw new AisClientException("An error occurred processing the signature and embedding CRL and OCSP data", e);
+            throw new RestClientException("An error occurred processing the signature and embedding CRL and OCSP data", e);
         }
     }
 
@@ -220,7 +220,7 @@ public class CrlOcspExtender {
                 }
                 return x509crl.getEncoded();
             } catch (Exception e) {
-                throw new AisClientException("Failed to generate X509CRL from CRL content received from AIS", e);
+                throw new RestClientException("Failed to generate X509CRL from CRL content received from AIS", e);
             }
         }).collect(Collectors.toList());
     }
@@ -248,7 +248,7 @@ public class CrlOcspExtender {
                 }
                 return basicResp.getEncoded(); // Add Basic OCSP Response to Collection (ASN.1 encoded representation of this object)
             } catch (Exception e) {
-                throw new AisClientException("Failed to generate X509CRL from CRL content received from AIS", e);
+                throw new RestClientException("Failed to generate X509CRL from CRL content received from AIS", e);
             }
         }).collect(Collectors.toList());
 

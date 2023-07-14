@@ -1,7 +1,7 @@
 package com.swisscom.ais.client.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.swisscom.ais.client.AisClientException;
+import com.swisscom.ais.client.RestClientException;
 import com.swisscom.ais.client.rest.model.etsi.auth.TokenRequest;
 import com.swisscom.ais.client.rest.model.etsi.auth.TokenResponse;
 import com.swisscom.ais.client.utils.Trace;
@@ -50,7 +50,7 @@ public class RestClientETSIAuthenticationImpl extends AbstractRestClientImpl imp
             try {
                 responseJson = EntityUtils.toString(response.getEntity());
             } catch (ParseException e) {
-                throw new AisClientException("Failed to interpret the HTTP response content as a string, for operation " +
+                throw new RestClientException("Failed to interpret the HTTP response content as a string, for operation " +
                         operationName + " - " + trace.getId(), e);
             }
             if (response.getCode() == 201) {
@@ -58,20 +58,20 @@ public class RestClientETSIAuthenticationImpl extends AbstractRestClientImpl imp
                 try {
                     return jacksonMapper.readValue(responseJson, TokenResponse.class);
                 } catch (JsonProcessingException e) {
-                    throw new AisClientException("Failed to deserialize JSON content to object of type " +
+                    throw new RestClientException("Failed to deserialize JSON content to object of type " +
                             String.class.getSimpleName() + " for operation " +
                             operationName + " - " +
                             trace.getId(), e);
                 }
             } else {
-                throw new AisClientException("Received fault response: HTTP " +
+                throw new RestClientException("Received fault response: HTTP " +
                         response.getCode() + " " +
                         response.getReasonPhrase() + " - " + trace.getId());
             }
         } catch (SSLException e) {
-            throw new AisClientException("TLS/SSL connection failure for " + operationName + " - " + trace.getId(), e);
+            throw new RestClientException("TLS/SSL connection failure for " + operationName + " - " + trace.getId(), e);
         } catch (Exception e) {
-            throw new AisClientException("Communication failure for " + operationName + " - " + trace.getId(), e);
+            throw new RestClientException("Communication failure for " + operationName + " - " + trace.getId(), e);
         }
     }
 
