@@ -34,6 +34,7 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
@@ -134,11 +135,13 @@ public class PdfDocument implements Closeable {
         if (signatureDefinition != null) {
             Rectangle2D
                     humanRect =
-                    new Rectangle2D.Float(signatureDefinition.getX(), signatureDefinition.getY(), signatureDefinition.getWidth(),
+                    new Rectangle2D.Float(signatureDefinition.getX(), signatureDefinition.getY(),
+                            signatureDefinition.getWidth(),
                             signatureDefinition.getHeight());
             PDRectangle rect = createSignatureRectangle(pdDocument, humanRect);
             options.setVisualSignature(
-                    createVisualSignatureTemplate(pdDocument, signatureDefinition.getPage(), signatureDefinition.getIconPath(), rect, pdSignature));
+                    createVisualSignatureTemplate(pdDocument, signatureDefinition.getPage(),
+                            signatureDefinition.getIconPath(), rect, pdSignature, signatureDefinition.getTtfFontPath()));
             options.setPage(signatureDefinition.getPage());
         }
 
@@ -315,7 +318,7 @@ public class PdfDocument implements Closeable {
     }
 
     // create a template PDF document with empty signature and return it as a stream.
-    private InputStream createVisualSignatureTemplate(PDDocument srcDoc, int pageNum, String iconPath, PDRectangle rect, PDSignature signature)
+    private InputStream createVisualSignatureTemplate(PDDocument srcDoc, int pageNum, String iconPath, PDRectangle rect, PDSignature signature, String ttfFontPath)
             throws IOException {
         try (PDDocument doc = new PDDocument()) {
             PDPage page = new PDPage(srcDoc.getPage(pageNum).getMediaBox());
@@ -362,8 +365,6 @@ public class PdfDocument implements Closeable {
                     break;
             }
             form.setBBox(bbox);
-            PDFont font = PDType1Font.HELVETICA_BOLD;
-
             // from PDVisualSigBuilder.createAppearanceDictionary()
             PDAppearanceDictionary appearance = new PDAppearanceDictionary();
             appearance.getCOSObject().setDirect(true);
@@ -394,12 +395,12 @@ public class PdfDocument implements Closeable {
 
                 // show text
                 float fontSize = 8;
-                float leading = fontSize * 0.3f;
                 cs.beginText();
+                PDFont font = getFont(ttfFontPath, doc);
                 cs.setFont(font, fontSize);
                 cs.setNonStrokingColor(Color.black);
-                cs.newLineAtOffset(fontSize, height - leading);
-                cs.setLeading(leading);
+                cs.newLineAtOffset(fontSize, height - fontSize);
+                cs.setLeading(fontSize);
 
                 Calendar cal = signature.getSignDate();
                 ZoneId zoneId = ZoneId.of("Europe/Berlin");
@@ -422,5 +423,13 @@ public class PdfDocument implements Closeable {
         }
     }
 
-
+    private static PDFont getFont(String ttfFontPath, PDDocument doc) throws IOException {
+        PDFont font;
+        if (ttfFontPath != null) {
+            font = PDType0Font.load(doc, new File(ttfFontPath));
+        } else {
+            font = PDType1Font.HELVETICA_BOLD;
+        }
+        return font;
+    }
 }

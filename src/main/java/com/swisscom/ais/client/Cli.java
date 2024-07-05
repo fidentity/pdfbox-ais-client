@@ -207,7 +207,7 @@ public class Cli {
             boolean shouldOpenBrowser = Boolean.parseBoolean(properties.getProperty("open.browser"));
 
             RAXCodeUrlParameters RAXCodeUrlParameters = new RAXCodeUrlParameters().fromProperties(properties);
-            String code = aisClient.getCodeFromConsole(RAXCodeUrlParameters, prepareDocumentForSigning, shouldOpenBrowser);
+            String code = aisClient.getCodeFromConsole(RAXCodeUrlParameters, prepareDocumentForSigning.getBase64HashToSign(), shouldOpenBrowser);
             //get token with the code
 
             System.out.println(prepareDocumentForSigning.getBase64HashToSign());
@@ -316,7 +316,7 @@ public class Cli {
             }
             argIndex++;
         }
-        if (inputFileList.size() == 0) {
+        if (inputFileList.isEmpty()) {
             showHelp("Input file name is missing");
             return;
         }

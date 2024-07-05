@@ -41,7 +41,7 @@ public class TestOnDemandSignatureWithETSIProgramaticConfiguration {
 
         RestClientConfiguration etsiConfig = new RestClientConfiguration();
         etsiConfig.setClientCertificateFile("cert/rax/certificate.crt");
-        etsiConfig.setClientKeyFile("/Users/vacariuionut/work/02_swiss_power/cert/rax/privatekey.key");
+        etsiConfig.setClientKeyFile("cert/rax/privatekey.key");
         ETSIConfigProps etsiConfigProps = new ETSIConfigProps();
         etsiConfigProps.setOidcUrl("https://xxxxxxxx-xxxxxxxxxx/auth/realms/broker/protocol/openid-connect/token");
         etsiConfigProps.setClientId("xxxxxxxxxxxx");
@@ -89,7 +89,7 @@ public class TestOnDemandSignatureWithETSIProgramaticConfiguration {
             urlDetails.setInputFromFile("/empty-doc.pdf");
             urlDetails.setHashAlgorithmOID("2.16.840.1.101.3.4.2.1");
             urlDetails.setCredentialID(credentialID);
-            String code = aisClient.getCodeFromConsole(urlDetails, prepareDocumentForSigning, true);
+            String code = aisClient.getCodeFromConsole(urlDetails, prepareDocumentForSigning.getBase64HashToSign(), true);
             //get token with the code
 
             System.out.println(prepareDocumentForSigning.getBase64HashToSign());

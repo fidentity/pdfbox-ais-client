@@ -53,7 +53,7 @@ public class RestClientETSIAuthenticationImpl extends AbstractRestClientImpl imp
                 throw new RestClientException("Failed to interpret the HTTP response content as a string, for operation " +
                         operationName + " - " + trace.getId(), e);
             }
-            if (response.getCode() == 201) {
+            if (response.getCode() == 200) {
                 logResponse(responseJson, operationName, trace, String.class.getSimpleName());
                 try {
                     return jacksonMapper.readValue(responseJson, TokenResponse.class);

@@ -19,7 +19,7 @@ public interface AisETSIClient extends Closeable {
 
     PdfDocument prepareDocumentForSigning(PdfHandle documentHandler, AbstractUserData userData, Trace trace);
 
-    String getCodeFromConsole(RAXCodeUrlParameters urlDetails, PdfDocument prepareDocumentForSigning, boolean shouldOpenBrowser) throws JsonProcessingException, UnsupportedEncodingException;
+    String getCodeFromConsole(RAXCodeUrlParameters urlDetails, String prepareDocumentForSigning, boolean shouldOpenBrowser) throws JsonProcessingException, UnsupportedEncodingException;
 
     String getJWTToken(String code, Trace trace) throws JsonProcessingException;
 }

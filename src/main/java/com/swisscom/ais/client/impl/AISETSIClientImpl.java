@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swisscom.ais.client.RestClientException;
 import com.swisscom.ais.client.AisETSIClient;
-import com.swisscom.ais.client.model.AbstractUserData;
-import com.swisscom.ais.client.model.ETSIUserData;
-import com.swisscom.ais.client.model.PdfHandle;
-import com.swisscom.ais.client.model.SignatureMode;
+import com.swisscom.ais.client.model.*;
 import com.swisscom.ais.client.rest.RestClient;
 import com.swisscom.ais.client.rest.RestClientETSIAuthentication;
 import com.swisscom.ais.client.rest.model.DigestAlgorithm;
@@ -34,12 +31,16 @@ public class AISETSIClientImpl implements AisETSIClient {
 
     private static final Logger logClient = LoggerFactory.getLogger(Loggers.CLIENT);
 
-    private final RestClientETSIAuthentication raxRestClient;
+    private RestClientETSIAuthentication raxRestClient;
     private final RestClient aisRestClient;
 
     public AISETSIClientImpl(RestClient restClient, RestClientETSIAuthentication restClientEtsi) {
         this.aisRestClient = restClient;
         this.raxRestClient = restClientEtsi;
+    }
+
+    public AISETSIClientImpl(RestClient restClient) {
+        this.aisRestClient = restClient;
     }
 
     @Override
@@ -66,7 +67,7 @@ public class AISETSIClientImpl implements AisETSIClient {
     }
 
     @Override
-    public String getCodeFromConsole(RAXCodeUrlParameters urlDetails, PdfDocument prepareDocumentForSigning, boolean shouldOpenBrowser) throws JsonProcessingException, UnsupportedEncodingException {
+    public String getCodeFromConsole(RAXCodeUrlParameters urlDetails, String prepareDocumentForSigning, boolean shouldOpenBrowser) throws JsonProcessingException, UnsupportedEncodingException {
         String claims = claims(urlDetails, prepareDocumentForSigning);
         String url = createRAXUrl(urlDetails, claims);
         System.out.println("click url to retrieve JWT code: " + url);
@@ -108,12 +109,12 @@ public class AISETSIClientImpl implements AisETSIClient {
         return aisRestClient.signETSI(signingRequest, trace);
     }
 
-    private static String claims(RAXCodeUrlParameters urlDetails, PdfDocument prepareDocumentForSigning) throws JsonProcessingException {
+    private static String claims(RAXCodeUrlParameters urlDetails, String base64HashToSign) throws JsonProcessingException {
         AuthRequest raxAuthRequest = new AuthRequest();
         raxAuthRequest.setHashAlgorithmOID(urlDetails.getHashAlgorithmOID());
         raxAuthRequest.setCredentialID(urlDetails.getCredentialID());
         String[] split = urlDetails.getInputFromFile().split("/");
-        DocumentsDigests documentsDigests = new DocumentsDigests(prepareDocumentForSigning.getBase64HashToSign()
+        DocumentsDigests documentsDigests = new DocumentsDigests(base64HashToSign
                 , split[split.length - 1]);
         raxAuthRequest.setDocumentDigests(Collections.singletonList(documentsDigests));
         return new ObjectMapper().writeValueAsString(raxAuthRequest);
