@@ -8,15 +8,18 @@ public class VisibleSignatureDefinition {
     private int height = 50;
     private int page = 0;
     private String iconPath;
+    private String ttfFontPath; // this is needed for keeping conformance level of pdf
 
     public VisibleSignatureDefinition(){}
-    public VisibleSignatureDefinition(int x, int y, int width, int height, int page, String iconPath){
+
+    public VisibleSignatureDefinition(int x, int y, int width, int height, int page, String iconPath, String ttfFontPath){
         this.setX(x);
         this.setY(y);
         this.setWidth(width);
         this.setHeight(height);
         this.setPage(page);
         this.setIconPath(iconPath);
+        this.setTtfFontPath(ttfFontPath);
     }
 
     public String getIconPath() {
@@ -66,4 +69,13 @@ public class VisibleSignatureDefinition {
     public void setWidth(int width) {
         this.width = width;
     }
+
+    public String getTtfFontPath() {
+        return ttfFontPath;
+    }
+
+    public void setTtfFontPath(String ttfFontPath) {
+        this.ttfFontPath = ttfFontPath;
+    }
+
 }

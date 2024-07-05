@@ -15,7 +15,7 @@
  */
 package com.swisscom.ais.client.rest.model;
 
-import com.swisscom.ais.client.AisClientException;
+import com.swisscom.ais.client.RestClientException;
 import com.swisscom.ais.client.rest.model.signresp.AISSignResponse;
 import com.swisscom.ais.client.rest.model.signresp.Result;
 import com.swisscom.ais.client.rest.model.signresp.ScExtendedSignatureObject;
@@ -71,7 +71,7 @@ public class ResponseHelper {
                 return seSignatureObject;
             }
         }
-        throw new AisClientException("Invalid AIS response. Cannot find the extended signature object for document with ID=[" + documentId + "]");
+        throw new RestClientException("Invalid AIS response. Cannot find the extended signature object for document with ID=[" + documentId + "]");
     }
 
     public static List<String> getResponseScCrlList(AISSignResponse response) {

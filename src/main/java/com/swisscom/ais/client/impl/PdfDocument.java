@@ -15,15 +15,13 @@
  */
 package com.swisscom.ais.client.impl;
 
-import com.swisscom.ais.client.AisClientException;
-import com.swisscom.ais.client.model.UserData;
+import com.swisscom.ais.client.RestClientException;
+import com.swisscom.ais.client.model.AbstractUserData;
 import com.swisscom.ais.client.model.VisibleSignatureDefinition;
 import com.swisscom.ais.client.rest.model.DigestAlgorithm;
 import com.swisscom.ais.client.rest.model.SignatureType;
 import com.swisscom.ais.client.utils.Trace;
 import com.swisscom.ais.client.utils.Utils;
-
-import org.apache.commons.codec.binary.StringUtils;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -36,17 +34,14 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.ExternalSigningSupport;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSeedValue;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSeedValueMDP;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.*;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
@@ -96,15 +91,15 @@ public class PdfDocument implements Closeable {
 
     public void prepareForSigning(DigestAlgorithm digestAlgorithm,
                                   SignatureType signatureType,
-                                  UserData userData) throws IOException, NoSuchAlgorithmException {
+                                  AbstractUserData userData) throws IOException, NoSuchAlgorithmException {
         this.digestAlgorithm = digestAlgorithm;
         id = Utils.generateDocumentId();
         pdDocument = PDDocument.load(contentIn);
 
         int accessPermissions = getDocumentPermissions();
         if (accessPermissions == 1) {
-            throw new AisClientException("Cannot sign document [" + name + "]. Document contains a certification " +
-                                         "that does not allow any changes.");
+            throw new RestClientException("Cannot sign document [" + name + "]. Document contains a certification " +
+                    "that does not allow any changes.");
         }
 
         PDSignature pdSignature = new PDSignature();
@@ -139,12 +134,14 @@ public class PdfDocument implements Closeable {
         // create a visible signature at the specified coordinates
         if (signatureDefinition != null) {
             Rectangle2D
-                humanRect =
-                new Rectangle2D.Float(signatureDefinition.getX(), signatureDefinition.getY(), signatureDefinition.getWidth(),
-                                      signatureDefinition.getHeight());
+                    humanRect =
+                    new Rectangle2D.Float(signatureDefinition.getX(), signatureDefinition.getY(),
+                            signatureDefinition.getWidth(),
+                            signatureDefinition.getHeight());
             PDRectangle rect = createSignatureRectangle(pdDocument, humanRect);
             options.setVisualSignature(
-                createVisualSignatureTemplate(pdDocument, signatureDefinition.getPage(), signatureDefinition.getIconPath(), rect, pdSignature));
+                    createVisualSignatureTemplate(pdDocument, signatureDefinition.getPage(),
+                            signatureDefinition.getIconPath(), rect, pdSignature, signatureDefinition.getTtfFontPath()));
             options.setPage(signatureDefinition.getPage());
         }
 
@@ -184,7 +181,7 @@ public class PdfDocument implements Closeable {
             }
             closeResource(contentOut, trace);
         } catch (Exception e) {
-            throw new AisClientException("Failed to embed the signature(s) in the document(s) and close the streams - " + trace.getId(), e);
+            throw new RestClientException("Failed to embed the signature(s) in the document(s) and close the streams - " + trace.getId(), e);
         }
     }
 
@@ -202,8 +199,8 @@ public class PdfDocument implements Closeable {
      * Get the permissions for this document from the DocMDP transform parameters dictionary.
      *
      * @return the permission integer value. 0 means no DocMDP transform parameters dictionary exists. Other
-     *     returned values are 1, 2 or 3. 2 is also returned if the DocMDP dictionary is found but did not
-     *     contain a /P entry, or if the value is outside the valid range.
+     * returned values are 1, 2 or 3. 2 is also returned if the DocMDP dictionary is found but did not
+     * contain a /P entry, or if the value is outside the valid range.
      */
     private int getDocumentPermissions() {
         COSBase base = pdDocument.getDocumentCatalog().getCOSObject().getDictionaryObject(COSName.PERMS);
@@ -321,8 +318,8 @@ public class PdfDocument implements Closeable {
     }
 
     // create a template PDF document with empty signature and return it as a stream.
-    private InputStream createVisualSignatureTemplate(PDDocument srcDoc, int pageNum, String iconPath, PDRectangle rect, PDSignature signature)
-        throws IOException {
+    private InputStream createVisualSignatureTemplate(PDDocument srcDoc, int pageNum, String iconPath, PDRectangle rect, PDSignature signature, String ttfFontPath)
+            throws IOException {
         try (PDDocument doc = new PDDocument()) {
             PDPage page = new PDPage(srcDoc.getPage(pageNum).getMediaBox());
             doc.addPage(page);
@@ -351,7 +348,7 @@ public class PdfDocument implements Closeable {
                 case 90:
                     form.setMatrix(AffineTransform.getQuadrantRotateInstance(1));
                     initialScale = Matrix.getScaleInstance(bbox.getWidth() / bbox.getHeight(),
-                                                           bbox.getHeight() / bbox.getWidth());
+                            bbox.getHeight() / bbox.getWidth());
                     height = bbox.getWidth();
                     break;
                 case 180:
@@ -360,7 +357,7 @@ public class PdfDocument implements Closeable {
                 case 270:
                     form.setMatrix(AffineTransform.getQuadrantRotateInstance(3));
                     initialScale = Matrix.getScaleInstance(bbox.getWidth() / bbox.getHeight(),
-                                                           bbox.getHeight() / bbox.getWidth());
+                            bbox.getHeight() / bbox.getWidth());
                     height = bbox.getWidth();
                     break;
                 case 0:
@@ -368,8 +365,6 @@ public class PdfDocument implements Closeable {
                     break;
             }
             form.setBBox(bbox);
-            PDFont font = PDType1Font.HELVETICA_BOLD;
-
             // from PDVisualSigBuilder.createAppearanceDictionary()
             PDAppearanceDictionary appearance = new PDAppearanceDictionary();
             appearance.getCOSObject().setDirect(true);
@@ -385,7 +380,7 @@ public class PdfDocument implements Closeable {
                     cs.transform(initialScale);
                 }
 
-                if(iconPath != null) {
+                if (iconPath != null) {
                     File image = new File(iconPath);
                     if (image != null && image.exists()) {
                         // show background image
@@ -400,12 +395,13 @@ public class PdfDocument implements Closeable {
 
                 // show text
                 float fontSize = 8;
-                float leading = fontSize * 1.5f;
                 cs.beginText();
+                float leading = fontSize * 1.5f;
+                PDFont font = getFont(ttfFontPath, doc);
                 cs.setFont(font, fontSize);
                 cs.setNonStrokingColor(Color.black);
-                cs.newLineAtOffset(fontSize, height - leading);
-                cs.setLeading(leading);
+                cs.newLineAtOffset(0, height - leading);
+                cs.setLeading(fontSize);
 
                 Calendar cal = signature.getSignDate();
                 ZoneId zoneId = ZoneId.of("Europe/Berlin");
@@ -428,5 +424,13 @@ public class PdfDocument implements Closeable {
         }
     }
 
-
+    private static PDFont getFont(String ttfFontPath, PDDocument doc) throws IOException {
+        PDFont font;
+        if (ttfFontPath != null) {
+            font = PDType0Font.load(doc, new File(ttfFontPath));
+        } else {
+            font = PDType1Font.HELVETICA_BOLD;
+        }
+        return font;
+    }
 }
