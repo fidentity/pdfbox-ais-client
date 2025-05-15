@@ -1,0 +1,15 @@
+
+     
+
+version: "3.8"
+services:
+  signserver-env:
+      image: maven:3.8.7-openjdk-18-slim
+      platform: linux/amd64 # Needed for Apple M1 ARM: Force platform to 'linux/amd64' since there is no image for 'linux/arm64/v8' of this openjkd version.
+      container_name: java-env
+      restart: "no"
+      volumes:
+        - ./:/data
+        - ./.m2:/root/.m2 # cache the maven directory on the host to speed up builds
+      working_dir: /data
+      command: tail -f /dev/null

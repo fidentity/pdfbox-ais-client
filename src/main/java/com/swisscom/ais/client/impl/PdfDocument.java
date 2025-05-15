@@ -138,7 +138,9 @@ public class PdfDocument implements Closeable {
                     new Rectangle2D.Float(signatureDefinition.getX(), signatureDefinition.getY(),
                             signatureDefinition.getWidth(),
                             signatureDefinition.getHeight());
-            PDRectangle rect = createSignatureRectangle(pdDocument, humanRect);
+            int pageNumber = signatureDefinition.getPage();
+
+            PDRectangle rect = createSignatureRectangle(pdDocument, pageNumber, humanRect);
             options.setVisualSignature(
                     createVisualSignatureTemplate(pdDocument, signatureDefinition.getPage(),
                             signatureDefinition.getIconPath(), rect, pdSignature, signatureDefinition.getTtfFontPath()));
@@ -278,12 +280,12 @@ public class PdfDocument implements Closeable {
 
     // ----------------------------------------------------------------------------------------------------
 
-    private PDRectangle createSignatureRectangle(PDDocument doc, Rectangle2D humanRect) {
+    private PDRectangle createSignatureRectangle(PDDocument doc, int pageNumber, Rectangle2D humanRect) {
         float x = (float) humanRect.getX();
         float y = (float) humanRect.getY();
         float width = (float) humanRect.getWidth();
         float height = (float) humanRect.getHeight();
-        PDPage page = doc.getPage(0);
+        PDPage page = doc.getPage(pageNumber);
         PDRectangle pageRect = page.getCropBox();
         PDRectangle rect = new PDRectangle();
         // signing should be at the same position regardless of page rotation.

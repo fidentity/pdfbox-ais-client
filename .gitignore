@@ -39,5 +39,6 @@ local-*.*
 tmp-*.*
 acme-*.*
 config.properties
+.m2
 
 src/main/java/com/swisscom/ais/LocalTestOnDemandSignatureWithStepUp.java
